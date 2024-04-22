@@ -7,17 +7,18 @@ function getCurrentUrl() {
 }
 
 function isChessCom() {
-  return getCurrentUrl().includes("chess.com")
+  return getCurrentUrl().includes("chess.com");
 }
 
 function isInChessComGame() {
   const currentUrl = getCurrentUrl();
-  return isChessCom() && (
-    currentUrl.includes("chess.com/game/live")
-      || currentUrl.includes("chess.com/game/daily")
-      || currentUrl.includes("chess.com/live#g=")
-      || /chess\.com\/game\/.+/.test(currentUrl)
-  )
+  return (
+    isChessCom() &&
+    (currentUrl.includes("chess.com/game/live") ||
+      currentUrl.includes("chess.com/game/daily") ||
+      currentUrl.includes("chess.com/live#g=") ||
+      /chess\.com\/game\/.+/.test(currentUrl))
+  );
 }
 
 function injectImportButton() {
@@ -28,35 +29,40 @@ function injectImportButton() {
 }
 
 function injectImportButtonImpl() {
-    const importButton = document.createElement("button");
+  const importButton = document.createElement("button");
 
-    const iconSpan = document.createElement("span");
-    iconSpan.className = "ui_v5-button-icon icon-font-chess chess-board-search";
-    
-    importButton.appendChild(iconSpan);
-    
-    importButton.className = "ui_v5-button-component ui_v5-button-primary ui_v5-button-full"
-    importButton.innerHTML += "<span>Lichess Review</span>"
+  const iconSpan = document.createElement("span");
+  iconSpan.className = "ui_v5-button-icon icon-font-chess chess-board-search";
 
-    importButton.addEventListener("click", importGame);
+  importButton.appendChild(iconSpan);
 
-    const wrapper = findReviewButtonsWrapper();
+  importButton.className =
+    "ui_v5-button-component ui_v5-button-primary ui_v5-button-full";
+  importButton.innerHTML += "<span>Lichess Review</span>";
 
-    wrapper && wrapper.appendChild(importButton);
+  importButton.addEventListener("click", importGame);
 
-    return importButton;
+  const wrapper = findReviewButtonsWrapper();
+
+  wrapper && wrapper.appendChild(importButton);
+
+  return importButton;
 }
 
 function checkIsChessCom() {
   if (!isChessCom()) {
-    alert("You are not on chess.com! Press me when you are viewing the game you'd like to analyze!");
+    alert(
+      "You are not on chess.com! Press me when you are viewing the game you'd like to analyze!",
+    );
     throw new Error("Not on chess.com");
   }
 }
 
 function checkIsChessComGame() {
   if (!isInChessComGame()) {
-    alert("You are in a chess.com game! Press me when you are viewing the game you'd like to analyze!");
+    alert(
+      "You are in a chess.com game! Press me when you are viewing the game you'd like to analyze!",
+    );
     throw new Error("Not on chess.com");
   }
 }
@@ -69,15 +75,15 @@ function findReviewButtonsWrapper() {
   return findElementByClasses("game-review-buttons-component");
 }
 
-function findShareButton(){
-    const shareButton = findElementByClasses(
-        "icon-font-chess share daily-game-footer-icon",
-        "icon-font-chess share live-game-buttons-button",
-        "icon-font-chess share game-buttons-button",// in case of chess.com/live#g=
-        "icon-font-chess share daily-game-footer-icon",// in case of chess.com/game/daily
-        "icon-font-chess share daily-game-footer-button"// in case of chess.com/game/live
-    );
-    return shareButton || document.querySelector('button[aria-label="Share"]');
+function findShareButton() {
+  const shareButton = findElementByClasses(
+    "icon-font-chess share daily-game-footer-icon",
+    "icon-font-chess share live-game-buttons-button",
+    "icon-font-chess share game-buttons-button", // in case of chess.com/live#g=
+    "icon-font-chess share daily-game-footer-icon", // in case of chess.com/game/daily
+    "icon-font-chess share daily-game-footer-button", // in case of chess.com/game/live
+  );
+  return shareButton || document.querySelector('button[aria-label="Share"]');
 }
 
 async function importGame() {
@@ -92,21 +98,26 @@ async function importGame() {
   }
 
   getLichessUrl(pgn)
-    .then(url => {
+    .then((url) => {
       if (url) {
         window.open(`${url}?from_chesscom=true`);
       }
-    }).catch(() => {
-      alert("Could not import game");
     })
+    .catch(() => {
+      alert("Could not import game");
+    });
 }
 
 async function getGamePGN() {
   const shareButton = findShareButton();
 
   if (!shareButton) {
-    alert("I could not find the fen! The game is probably not finished. Try clicking me when the game is over.");
-    throw new Error("I could not find the fen! The game is probably not finished. Try clicking me when the game is over.");
+    alert(
+      "I could not find the fen! The game is probably not finished. Try clicking me when the game is over.",
+    );
+    throw new Error(
+      "I could not find the fen! The game is probably not finished. Try clicking me when the game is over.",
+    );
   }
 
   shareButton.click();
@@ -124,42 +135,51 @@ async function getGamePGN() {
   const pgn = pgnTextarea.value;
 
   if (!pgn.trim()) {
-    alert("Not a valid PGN! Make sure you are on chess.com/games! If this is not correct please contact the creator.")
-    throw new Error("Not a valid PGN! Make sure you are on chess.com/games! If this is not correct please contact the creator.")
+    alert(
+      "Not a valid PGN! Make sure you are on chess.com/games! If this is not correct please contact the creator.",
+    );
+    throw new Error(
+      "Not a valid PGN! Make sure you are on chess.com/games! If this is not correct please contact the creator.",
+    );
   }
 
-  console.log('pgn', pgn);
+  console.log("pgn", pgn);
 
   return pgn;
 }
 
 function closeShareButton() {
-    const closeButton = findElementByClasses(
+  const closeButton =
+    findElementByClasses(
       "icon-font-chess x icon-font-secondary",
       "icon-font-chess x share-menu-close-icon",
-    ) || document.querySelector("#share-modal .icon-font-chess.x.ui_outside-close-icon");
-    if (closeButton) closeButton.click();
+    ) ||
+    document.querySelector(
+      "#share-modal .icon-font-chess.x.ui_outside-close-icon",
+    );
+  if (closeButton) closeButton.click();
 }
-
 
 function getLichessUrl(pgn) {
   const url = "https://lichess.org/api/import";
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(
       {
-        data: {pgn: pgn}, 
-        url: url
-      }, resolve)
+        data: { pgn: pgn },
+        url: url,
+      },
+      resolve,
+    );
   });
 }
 
 (function loop() {
-  console.log('__loop__')
+  console.log("__loop__");
   setTimeout(async () => {
     if (isInChessComGame()) {
-      console.log('__in_chess_com_game__');
+      console.log("__in_chess_com_game__");
       await waitUntil(() => {
-        console.log('__wait_until_share_button_found__');
+        console.log("__wait_until_share_button_found__");
         return findShareButton() != null;
       });
       injectImportButton();
@@ -168,16 +188,15 @@ function getLichessUrl(pgn) {
   }, 1000 * 10);
 })();
 
-
 // TODO: better way to separate code
 
 function wait(ms) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const id = setTimeout(() => {
       clearTimeout(id);
       resolve();
     }, ms);
-  })
+  });
 }
 
 function waitUntil(predicate, backoffMs = 1000 * 10) {
@@ -188,12 +207,12 @@ function waitUntil(predicate, backoffMs = 1000 * 10) {
     }
     await wait(backoffMs);
     return retry(resolve);
-  })
+  });
 }
 
 /**
-  * @param {string[]} classes
-  */
+ * @param {string[]} classes
+ */
 function findElementByClasses(...classes) {
   for (const clazz of classes) {
     const el = document.getElementsByClassName(clazz)[0];
