@@ -1,7 +1,5 @@
 const LICHESS_IMPORT_BUTTON = "__LICHESS_IMPORT_BUTTON__";
 
-const shouldReviewGame = false;
-
 function getCurrentUrl() {
   return window.location.href.trim();
 }
@@ -97,7 +95,7 @@ async function importGame() {
     return;
   }
 
-  getLichessUrl(pgn)
+  importPGN_onLichess(pgn)
     .then((url) => {
       if (url) {
         window.open(`${url}?from_chesscom=true`);
@@ -130,7 +128,7 @@ async function getGamePGN() {
     throw new Error("Could not get the pgn");
   }
 
-  closeShareButton();
+  closeShareModal();
 
   const pgn = pgnTextarea.value;
 
@@ -143,12 +141,10 @@ async function getGamePGN() {
     );
   }
 
-  console.log("pgn", pgn);
-
   return pgn;
 }
 
-function closeShareButton() {
+function closeShareModal() {
   const closeButton =
     findElementByClasses(
       "icon-font-chess x icon-font-secondary",
@@ -160,7 +156,7 @@ function closeShareButton() {
   if (closeButton) closeButton.click();
 }
 
-function getLichessUrl(pgn) {
+function importPGN_onLichess(pgn) {
   const url = "https://lichess.org/api/import";
   return new Promise((resolve) => {
     chrome.runtime.sendMessage(
@@ -174,12 +170,9 @@ function getLichessUrl(pgn) {
 }
 
 (function loop() {
-  console.log("__loop__");
   setTimeout(async () => {
     if (isInChessComGame()) {
-      console.log("__in_chess_com_game__");
       await waitUntil(() => {
-        console.log("__wait_until_share_button_found__");
         return findShareButton() != null;
       });
       injectImportButton();
@@ -187,8 +180,6 @@ function getLichessUrl(pgn) {
     loop();
   }, 1000 * 10);
 })();
-
-// TODO: better way to separate code
 
 function wait(ms) {
   return new Promise((resolve) => {
