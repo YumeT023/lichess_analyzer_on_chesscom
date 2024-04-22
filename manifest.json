@@ -1,0 +1,35 @@
+{
+  "name": "Chess.com to Lichess Import",
+  "description": "Allows users to import Chess.com games into Lichess with one click",
+  "version": "0.8",
+  "icons":{
+    "48":"logo.png",
+    "128":"logo128.png"
+  },
+  "action": {
+    "default_popup": "./index.html"
+  },
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://lichess.org/*"
+  ],
+  "background": {
+    "service_worker": "./scripts/worker.js",
+    "type": "module"
+  },
+  "web_accessible_resources": [{
+    "resources": ["table.html", "scripts/*", "styles/*"],
+    "matches": ["https://www.chess.com/*", "https://lichess.org/*"],
+    "use_dyanmics_url": true
+  }],
+  "content_scripts": [
+    {
+      "matches": ["https://www.chess.com/*", "https://lichess.org/*"],
+      "js": ["./scripts/inject_lichess_review.js", "./scripts/lichess_analysis.js"]
+    }
+  ],
+  "manifest_version": 3
+}
